@@ -40,11 +40,12 @@ public class DBSessionTest {
 		map.put("sid", 11);
 		map.put("sNum", 12);
 		map.put("sState", 13);
-		session = DBFactory.getDBSession();
 		list = session.select(sql, s, S1.class);
 		for (int i = 0; i < list.size(); i++) {
 			System.out.println(list.get(i));
 		}
+
+		session.close();
 	}
 
 	/**
@@ -73,11 +74,12 @@ public class DBSessionTest {
 		map.put("sid", 11);
 		map.put("sNum", 12);
 		map.put("sState", 13);
-		session = DBFactory.getDBSession();
 		list = session.select(sql, map);
 		for (int i = 0; i < list.size(); i++) {
 			System.out.println(list.get(i));
 		}
+		
+		session.close();
 	}
 
 	/**
@@ -94,6 +96,7 @@ public class DBSessionTest {
 		for (int i = 0; i < list.size(); i++) {
 			System.out.println(list.get(i));
 		}
+		session.close();
 	}
 
 	/**
@@ -118,11 +121,12 @@ public class DBSessionTest {
 		s.setSid(11);
 		s.setsNum(12);
 		s.setsState(13);
-		session = DBFactory.getDBSession();
 		System.out.println("====================================");
 		System.out.println(session.update(sql, s));
 
 		selectAll();
+		
+		session.close();
 	}
 
 	/**
@@ -141,14 +145,15 @@ public class DBSessionTest {
 		DBSession session = DBFactory.getDBSession();
 		System.out.println("====================================");
 		System.out.println(session.insert(insertSql, s));
-		
+
 		selectAll();
-		
+
 		String deleteSql = "delete from s1 where s_id = :sid";
-		session = DBFactory.getDBSession();
 		System.out.println("====================================");
-		System.out.println(session.insert(deleteSql, s));
-		
+		System.out.println(session.delete(deleteSql, s));
+
 		selectAll();
+		
+		session.close();
 	}
 }

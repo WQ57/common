@@ -18,11 +18,46 @@ import com.wq.common.util.UnCaughtException;
  */
 public class DBSession {
 
+	Connection conn;
+
+	public DBSession() {
+		conn = DBFactory.getConn();
+	}
+
+	/**
+	 * 是否自动提交事务.
+	 * 
+	 * @param autoCommit
+	 * @throws SQLException
+	 * @author wuqing
+	 * @date 2014年11月24日 下午3:13:57
+	 */
+	public void setAutoCommit(boolean autoCommit) {
+		try {
+			this.conn.setAutoCommit(autoCommit);
+		} catch (SQLException e) {
+			throw new UnCaughtException(e);
+		}
+	}
+
+	/**
+	 * 关闭数据库连接.
+	 * 
+	 * @author wuqing
+	 * @date 2014年11月24日 下午3:15:21
+	 */
+	public void close() {
+		try {
+			DBFactory.commit(this.conn);
+			this.conn.close();
+		} catch (SQLException e) {
+			throw new UnCaughtException(e);
+		}
+	}
+
 	/**
 	 * 获得PreparedStatement.
 	 * 
-	 * @param conn
-	 *            数据库连接
 	 * @param param
 	 *            参数
 	 * @param sql
@@ -33,8 +68,8 @@ public class DBSession {
 	 * @date 2014年11月23日 上午1:38:10
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private PreparedStatement getPreparedStatement(Connection conn,
-			Object param, String sql) throws Exception {
+	private PreparedStatement getPreparedStatement(Object param, String sql)
+			throws Exception {
 		PreparedStatement pst;
 		if (param != null
 				&& ReflectUtil.isImplementsInterface(param.getClass(),
@@ -61,11 +96,10 @@ public class DBSession {
 	 */
 	public <T> List<T> select(String sql, Object param, Class<T> targetClz) {
 		try {
-			Connection conn = DBFactory.getConn();
-			PreparedStatement pst = getPreparedStatement(conn, param, sql);
+			PreparedStatement pst = getPreparedStatement(param, sql);
 			ResultSet rs = pst.executeQuery();
 			List<T> list = ResultSetUtil.getObjectResult(rs, targetClz);
-			DBFactory.close(conn, pst, rs);
+			DBFactory.close(null, pst, rs);
 			return list;
 		} catch (SQLException e) {
 			throw new UnCaughtException(e);
@@ -87,11 +121,10 @@ public class DBSession {
 	 */
 	public List<Map<String, Object>> select(String sql, Object param) {
 		try {
-			Connection conn = DBFactory.getConn();
-			PreparedStatement pst = getPreparedStatement(conn, param, sql);
+			PreparedStatement pst = getPreparedStatement(param, sql);
 			ResultSet rs = pst.executeQuery();
 			List<Map<String, Object>> list = ResultSetUtil.getMapResult(rs);
-			DBFactory.close(conn, pst, rs);
+			DBFactory.close(null, pst, rs);
 			return list;
 		} catch (SQLException e) {
 			throw new UnCaughtException(e);
@@ -113,10 +146,9 @@ public class DBSession {
 	 */
 	public int update(String sql, Object param) {
 		try {
-			Connection conn = DBFactory.getConn();
-			PreparedStatement pst = getPreparedStatement(conn, param, sql);
+			PreparedStatement pst = getPreparedStatement(param, sql);
 			int num = pst.executeUpdate();
-			DBFactory.close(conn, pst);
+			DBFactory.close(null, pst);
 			return num;
 		} catch (SQLException e) {
 			throw new UnCaughtException(e);
@@ -154,4 +186,5 @@ public class DBSession {
 	public int delete(String sql, Object param) {
 		return update(sql, param);
 	}
+
 }
